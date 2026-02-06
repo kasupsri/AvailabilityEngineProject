@@ -1,6 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
-using AvailabilityEngineProject.API.Routes.Availability.Models;
+using AvailabilityEngineProject.API.ApiMappers;
 using AvailabilityEngineProject.Application.Queries.GetAvailability;
 
 namespace AvailabilityEngineProject.API.Routes.Availability.Endpoints;
@@ -38,14 +38,7 @@ public static class GetAvailability
         try
         {
             var result = await query.ExecuteAsync(request, cancellationToken);
-            if (!result.Found || result.Slot is null)
-                return Results.Ok(new AvailabilityResponse(false));
-
-            var slot = result.Slot;
-            return Results.Ok(new AvailabilityResponse(
-                true,
-                slot.Start.UtcDateTime.ToString("o", CultureInfo.InvariantCulture),
-                slot.End.UtcDateTime.ToString("o", CultureInfo.InvariantCulture)));
+            return Results.Ok(AvailabilityResponseMapper.ToResponse(result));
         }
         catch (Exception ex)
         {

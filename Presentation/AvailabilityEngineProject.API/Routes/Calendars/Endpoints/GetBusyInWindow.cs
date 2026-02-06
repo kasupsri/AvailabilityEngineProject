@@ -1,8 +1,8 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using AvailabilityEngineProject.API.ApiMappers;
 using AvailabilityEngineProject.API.Routes.Calendars.Models;
-using AvailabilityEngineProject.Application.Repository;
-using AvailabilityEngineProject.Domain;
+using AvailabilityEngineProject.Application.Queries.GetBusyInWindow;
 
 namespace AvailabilityEngineProject.API.Routes.Calendars.Endpoints;
 
@@ -12,7 +12,7 @@ public static class GetBusyInWindow
         [FromQuery] string attendees,
         [FromQuery] string windowStart,
         [FromQuery] string windowEnd,
-        ICalendarQueryRepository queryRepository,
+        IGetBusyInWindowQuery query,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(attendees))
@@ -32,32 +32,15 @@ public static class GetBusyInWindow
         if (attendeeList.Count == 0)
             return Results.Ok(Array.Empty<AttendeeBusyInWindowResponse>());
 
-        var persons = await queryRepository.GetPersonsAsync(cancellationToken);
-        var personByEmail = persons.Where(p => attendeeList.Contains(p.Email, StringComparer.OrdinalIgnoreCase))
-            .ToDictionary(p => p.Email, p => p.Name, StringComparer.OrdinalIgnoreCase);
-        var busyByEmail = await queryRepository.GetBusyByEmailsAsync(attendeeList, cancellationToken);
-
-        var result = new List<AttendeeBusyInWindowResponse>();
-        foreach (var email in attendeeList)
+        try
         {
-            var name = personByEmail.TryGetValue(email, out var n) ? n : email;
-            if (!busyByEmail.TryGetValue(email, out var intervals))
-            {
-                result.Add(new AttendeeBusyInWindowResponse(email, name, Array.Empty<BusyIntervalResponse>()));
-                continue;
-            }
-            var clipped = new List<BusyIntervalResponse>();
-            foreach (var iv in intervals)
-            {
-                var clipStart = iv.Start < ws ? ws : iv.Start;
-                var clipEnd = iv.End > we ? we : iv.End;
-                if (clipEnd > clipStart)
-                    clipped.Add(new BusyIntervalResponse(
-                        clipStart.UtcDateTime.ToString("o", CultureInfo.InvariantCulture),
-                        clipEnd.UtcDateTime.ToString("o", CultureInfo.InvariantCulture)));
-            }
-            result.Add(new AttendeeBusyInWindowResponse(email, name, clipped.ToArray()));
+            var request = new GetBusyInWindowRequest(attendeeList, ws, we);
+            var result = await query.ExecuteAsync(request, cancellationToken);
+            return Results.Ok(BusyInWindowResponseMapper.ToResponseArray(result));
         }
-        return Results.Ok(result);
+        catch (Exception ex)
+        {
+            return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 }

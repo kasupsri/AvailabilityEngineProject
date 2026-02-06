@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using AvailabilityEngineProject.API.ApiMappers;
 using AvailabilityEngineProject.API.Routes.Calendars.Models;
 using AvailabilityEngineProject.Application.Commands.PutBusy;
 using AvailabilityEngineProject.Domain;
@@ -27,21 +28,20 @@ public static class PutBusy
             {
                 return Results.BadRequest($"Invalid interval: start='{b.Start}', end='{b.End}'. Use ISO-8601 UTC.");
             }
-            if (end <= start)
+            try
+            {
+                intervals.Add(TimeInterval.Create(start, end));
+            }
+            catch (ArgumentException)
+            {
                 return Results.BadRequest($"Invalid interval: end must be after start (start='{b.Start}', end='{b.End}').");
-            intervals.Add(new TimeInterval(start, end));
+            }
         }
 
         try
         {
             var result = await command.ExecuteAsync(email, request.Name, intervals, cancellationToken);
-            var response = new BusyPutResponse(
-                result.Email,
-                result.Name,
-                result.Busy.Select(i => new BusyIntervalResponse(
-                    i.Start.UtcDateTime.ToString("o", CultureInfo.InvariantCulture),
-                    i.End.UtcDateTime.ToString("o", CultureInfo.InvariantCulture))).ToArray());
-            return Results.Ok(response);
+            return Results.Ok(BusyPutResponseMapper.ToResponse(result));
         }
         catch (Exception ex)
         {

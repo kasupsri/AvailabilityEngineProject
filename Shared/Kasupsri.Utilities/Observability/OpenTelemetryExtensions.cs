@@ -97,6 +97,9 @@ public static class OpenTelemetryExtensions
                          options.EnrichWithHttpRequest = (activity, request) =>
                          {
                              activity.SetTag("requestProtocol", request.Protocol);
+                             var correlationId = request.Headers["X-Correlation-ID"].FirstOrDefault();
+                             if (!string.IsNullOrEmpty(correlationId))
+                                 activity.SetTag("correlation.id", correlationId);
                          };
                          options.EnrichWithHttpResponse = (activity, response) =>
                          {

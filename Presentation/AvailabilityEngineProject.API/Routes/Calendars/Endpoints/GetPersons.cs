@@ -1,4 +1,4 @@
-using AvailabilityEngineProject.API.Routes.Calendars.Models;
+using AvailabilityEngineProject.API.ApiMappers;
 using AvailabilityEngineProject.Application.Queries.GetPersons;
 
 namespace AvailabilityEngineProject.API.Routes.Calendars.Endpoints;
@@ -10,7 +10,7 @@ public static class GetPersons
         try
         {
             var persons = await query.ExecuteAsync(cancellationToken);
-            var response = persons.Select(p => new PersonResponse(p.Email, p.Name)).ToArray();
+            var response = persons.Select(PersonResponseMapper.ToResponse).ToArray();
             return Results.Ok(response);
         }
         catch (Exception ex)

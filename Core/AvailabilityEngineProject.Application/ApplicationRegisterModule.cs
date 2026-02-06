@@ -1,6 +1,7 @@
 using Autofac;
 using AvailabilityEngineProject.Application.Commands.PutBusy;
 using AvailabilityEngineProject.Application.Queries.GetAvailability;
+using AvailabilityEngineProject.Application.Queries.GetBusyInWindow;
 using AvailabilityEngineProject.Application.Queries.GetPersons;
 using AvailabilityEngineProject.Application.Repository;
 using AvailabilityEngineProject.Application.Services;
@@ -40,6 +41,10 @@ public class ApplicationRegisterModule : Module
 
         builder.RegisterType<GetPersonsHandler>()
             .As<IGetPersonsQuery>()
+            .InstancePerLifetimeScope();
+
+        builder.RegisterType<GetBusyInWindowHandler>()
+            .As<IGetBusyInWindowQuery>()
             .InstancePerLifetimeScope();
     }
 }

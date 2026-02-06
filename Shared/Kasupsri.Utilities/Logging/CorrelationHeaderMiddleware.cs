@@ -1,5 +1,7 @@
-﻿using Kasupsri.Utilities.Logging.Correlation;
+using System.Diagnostics;
+using Kasupsri.Utilities.Logging.Correlation;
 using Microsoft.AspNetCore.Http;
+using Serilog.Context;
 
 namespace Kasupsri.Utilities.Logging;
 
@@ -18,13 +20,17 @@ public class CorrelationHeaderMiddleware
         var correlationId = context.Request.Headers[CorrelationIdHeaderName].FirstOrDefault();
 
         if (string.IsNullOrEmpty(correlationId))
-        {
             correlationId = Guid.NewGuid().ToString();
-        }
 
         correlationIdAccessor.SetCorrelationId(correlationId);
         context.Response.Headers[CorrelationIdHeaderName] = correlationId;
 
-        await _next(context);
+        if (Activity.Current != null)
+            Activity.Current.SetTag("correlation.id", correlationId);
+
+        using (LogContext.PushProperty("CorrelationId", correlationId))
+        {
+            await _next(context);
+        }
     }
 }

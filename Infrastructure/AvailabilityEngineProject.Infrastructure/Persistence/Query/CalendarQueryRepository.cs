@@ -1,8 +1,10 @@
 using AvailabilityEngineProject.Application.Repository;
-using AvailabilityEngineProject.Domain;
 using AvailabilityEngineProject.Infrastructure.Persistence.Context;
 using AvailabilityEngineProject.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
+using PersonEntity = AvailabilityEngineProject.Infrastructure.Persistence.Entity.Person;
+using PersonDomain = AvailabilityEngineProject.Domain.Person;
+using TimeInterval = AvailabilityEngineProject.Domain.TimeInterval;
 
 namespace AvailabilityEngineProject.Infrastructure.Persistence.Query;
 
@@ -47,11 +49,11 @@ public sealed class CalendarQueryRepository : ICalendarQueryRepository
         return result;
     }
 
-    public async Task<IReadOnlyList<PersonInfo>> GetPersonsAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<AvailabilityEngineProject.Domain.Person>> GetPersonsAsync(CancellationToken cancellationToken)
     {
         var list = await _context.Persons
             .OrderBy(p => p.Email)
-            .Select(p => new PersonInfo(p.Email, p.Name))
+            .Select(p => new PersonDomain(p.Id, p.Email, p.Name))
             .ToListAsync(cancellationToken);
         return list;
     }

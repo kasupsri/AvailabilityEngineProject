@@ -1,9 +1,9 @@
 using AvailabilityEngineProject.Application.Repository;
 using AvailabilityEngineProject.Domain;
 using AvailabilityEngineProject.Infrastructure.Persistence.Context;
-using AvailabilityEngineProject.Infrastructure.Persistence.Entity;
 using AvailabilityEngineProject.Infrastructure.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
+using PersonEntity = AvailabilityEngineProject.Infrastructure.Persistence.Entity.Person;
 
 namespace AvailabilityEngineProject.Infrastructure.Persistence.Command;
 
@@ -21,7 +21,7 @@ public sealed class CalendarCommandRepository : ICalendarCommandRepository
         var person = await _context.Persons.FirstOrDefaultAsync(p => p.Email == email, cancellationToken);
         if (person == null)
         {
-            person = new Person { Email = email, Name = name };
+            person = new PersonEntity { Email = email, Name = name };
             _context.Persons.Add(person);
             await _context.SaveChangesAsync(cancellationToken);
         }

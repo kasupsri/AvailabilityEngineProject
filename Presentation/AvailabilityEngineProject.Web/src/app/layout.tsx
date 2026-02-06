@@ -6,7 +6,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Search, GalleryVerticalEnd } from "lucide-react";
+import { Calendar, Search, GalleryVerticalEnd, ExternalLink } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
 const version = "1.0.0";
@@ -15,6 +15,12 @@ const navItems = [
   { title: "Set busy", href: "/", icon: Calendar },
   { title: "Find availability", href: "/find", icon: Search },
 ];
+
+const aboutMeItem = {
+  title: "About Me",
+  href: "https://kasupsri.me/",
+  icon: ExternalLink,
+};
 
 export default function RootLayout() {
   const location = useLocation();
@@ -61,6 +67,14 @@ export default function RootLayout() {
                       ))}
                     </div>
                   </div>
+                </div>
+                <div className="px-3 pb-4 mt-auto">
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <a href={aboutMeItem.href} target="_blank" rel="noopener noreferrer">
+                      <aboutMeItem.icon className="mr-2 h-4 w-4" />
+                      {aboutMeItem.title}
+                    </a>
+                  </Button>
                 </div>
               </div>
             </SidebarContent>

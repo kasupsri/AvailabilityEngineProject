@@ -2,6 +2,16 @@
 
 API and Web UI for finding the earliest available meeting slot across multiple attendees. Implements the take-home exercise with a simple union-all-busy strategy and a design that allows swapping to a K-way merge strategy later.
 
+**Live application:** https://availabilityengine.kasupsri.me
+
+| URL | Description |
+|-----|-------------|
+| https://availabilityengine.kasupsri.me | Web app |
+| https://availabilityengine.kasupsri.me/swagger/index.html | API docs (Swagger UI) |
+| https://availabilityengine.kasupsri.me/health | Health check |
+| https://availabilityengine.kasupsri.me/api/calendars/{personId}/busy | PUT busy intervals |
+| https://availabilityengine.kasupsri.me/api/availability | GET earliest slot |
+
 ## Design
 
 **Two approaches considered**
@@ -70,10 +80,10 @@ docker compose up -d
 
 Deploy using pre-built images and an existing Cloudflare Tunnel (cloudflared), same pattern as UserDirectory:
 
-1. **Build images** on a build machine (from repo root): `docker compose build`. Optionally tag: `docker tag availabilityengine-api:latest availabilityengine-api:1.0.0` (and similarly for web). Save and copy to the VM: `docker save availabilityengine-api:latest availabilityengine-web:latest | gzip > images.tar.gz`, then scp to the VM and `docker load < images.tar.gz`.
+1. **Build images** on a build machine (from repo root). For production, build the web image with the public origin: `docker compose build --build-arg VITE_API_URL=https://availabilityengine.kasupsri.me web` (or build all with that env set). Optionally tag: `docker tag availabilityengine-api:latest availabilityengine-api:1.0.0` (and similarly for web). Save and copy to the VM: `docker save availabilityengine-api:latest availabilityengine-web:latest | gzip > images.tar.gz`, then scp to the VM and `docker load < images.tar.gz`.
 2. **On the Proxmox VM:** Copy the repo (or relevant files) to `/opt/availabilityengine` so that `docker-compose.yml` and `deploy/docker-compose.production.yml` are in place, plus `nginx/` config. Do not copy `data/` or dev `.env` from your machine.
 3. **One-time setup:** Run `sudo deploy/setup-vm.sh` to install Docker and create `/opt/availabilityengine` directories.
-4. **Configure:** Create `/opt/availabilityengine/.env.production` from `deploy/.env.production.example` (set `VITE_API_URL` to your public URL, e.g. `https://availability.yourdomain.com/api`).
+4. **Configure:** Create `/opt/availabilityengine/.env.production` from `deploy/.env.production.example`. Set `VITE_API_URL` to the public **origin only** (e.g. `https://availabilityengine.kasupsri.me`), no trailing `/api`—the app adds `/api/` to paths.
 5. **Deploy:** From `/opt/availabilityengine`, run `sudo deploy/deploy.sh`. It uses the pre-loaded images (no build on server), starts Compose, and enables the systemd service.
 6. **Cloudflared:** Configure your existing Cloudflare Tunnel to route your chosen hostname to this VM’s port 80 (e.g. `http://localhost:80` or the VM’s LAN IP). The app does not install cloudflared; use your existing tunnel.
 

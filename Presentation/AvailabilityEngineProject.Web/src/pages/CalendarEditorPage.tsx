@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import toast from 'react-hot-toast';
-import { getWindowPreset, DEFAULT_WINDOW_PRESET, type WindowPresetKey } from '@/lib/dateWindowPresets';
+import { getWindowPreset, type WindowPresetKey } from '@/lib/dateWindowPresets';
 
 export default function CalendarEditorPage() {
   const [email, setEmail] = useState('');

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import type { PersonResponse, AttendeeBusyResponse } from '@/api/calendarApi';
 import type { BusyIntervalDto } from '@/api/calendarApi';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -58,8 +58,6 @@ export function TimeGrid({
   busyData,
   foundSlot = null,
   scale = 'hours',
-  editableEmail,
-  onEditableIntervalsChange,
 }: TimeGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -69,12 +67,13 @@ export function TimeGrid({
   const columnCount = COLUMN_COUNT;
 
   const displayStart = start;
-  const displayEnd =
+  const computedEnd =
     scale === 'hours' ? start + columnCount * 60 * 60 * 1000
     : scale === 'days' ? start + columnCount * 24 * 60 * 60 * 1000
     : scale === 'weeks' ? start + columnCount * 7 * 24 * 60 * 60 * 1000
     : scale === 'months' ? addCalendarMonths(start, columnCount)
     : addCalendarYears(start, columnCount);
+  const displayEnd = Math.min(computedEnd, end);
 
   const displayDurationMs = displayEnd - displayStart;
   const columnDurationMs = displayDurationMs / columnCount;

@@ -1,0 +1,30 @@
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["Presentation/AvailabilityEngineProject.API/AvailabilityEngineProject.API.csproj", "Presentation/AvailabilityEngineProject.API/"]
+COPY ["Core/AvailabilityEngineProject.Application/AvailabilityEngineProject.Application.csproj", "Core/AvailabilityEngineProject.Application/"]
+COPY ["Core/AvailabilityEngineProject.Domain/AvailabilityEngineProject.Domain.csproj", "Core/AvailabilityEngineProject.Domain/"]
+COPY ["Infrastructure/AvailabilityEngineProject.Infrastructure/AvailabilityEngineProject.Infrastructure.csproj", "Infrastructure/AvailabilityEngineProject.Infrastructure/"]
+COPY ["Shared/Kasupsri.Utilities/Kasupsri.Utilities.csproj", "Shared/Kasupsri.Utilities/"]
+COPY ["Infrastructure/AvailabilityEngineProject.Infrastructure.DbPrimer/AvailabilityEngineProject.Infrastructure.DbPrimer.csproj", "Infrastructure/AvailabilityEngineProject.Infrastructure.DbPrimer/"]
+COPY ["Presentation/AvailabilityEngineProject.DbPrimer.Console/AvailabilityEngineProject.DbPrimer.Console.csproj", "Presentation/AvailabilityEngineProject.DbPrimer.Console/"]
+
+RUN dotnet restore "Presentation/AvailabilityEngineProject.API/AvailabilityEngineProject.API.csproj"
+COPY . .
+WORKDIR "/src/Presentation/AvailabilityEngineProject.API"
+RUN dotnet build "AvailabilityEngineProject.API.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "AvailabilityEngineProject.API.csproj" -c Release -o /app/publish/api
+RUN dotnet publish "/src/Presentation/AvailabilityEngineProject.DbPrimer.Console/AvailabilityEngineProject.DbPrimer.Console.csproj" -c Release -o /app/publish/dbprimer
+
+FROM base AS final
+WORKDIR /app
+# Only publish output is copied; no source code in the runtime image
+COPY --from=publish /app/publish .
+WORKDIR /app/api
+ENTRYPOINT ["dotnet", "AvailabilityEngineProject.API.dll"]

@@ -1,0 +1,6 @@
+﻿{
+  "Observability": {
+    "Enabled": false,
+    "Sampler": "AlwaysOnSampler"
+  }
+}

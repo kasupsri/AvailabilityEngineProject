@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS PersonBusyIntervals (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    PersonId INTEGER NOT NULL,
+    StartUtc TEXT NOT NULL,
+    EndUtc TEXT NOT NULL,
+    FOREIGN KEY (PersonId) REFERENCES Persons (Id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS IX_PersonBusyIntervals_PersonId ON PersonBusyIntervals (PersonId);

@@ -1,0 +1,26 @@
+---
+description: Calendar and Find Availability UI conventions (TimeGrid, presets, UTC)
+globs: "**/pages/*Calendar*.tsx,**/pages/*Availability*.tsx,**/components/TimeGrid.tsx,**/lib/dateWindowPresets.ts"
+alwaysApply: false
+---
+
+# Calendar and Availability UI
+
+## TimeGrid component
+
+- **Location**: `src/components/TimeGrid.tsx`
+- **Use when**: Showing busy blocks per attendee in a time window (Set busy "all users" calendar, Find Availability calendar).
+- **Props**: `attendees` (PersonResponse[]), `windowStart`, `windowEnd` (ISO strings), `busyData` (AttendeeBusyResponse[] | null), `foundSlot?` (optional, for Find Availability green highlight).
+- Do not duplicate the time-grid layout; import and use `TimeGrid`.
+
+## Time window and duration
+
+- **Default view**: Use `DEFAULT_WINDOW_PRESET` from `@/lib/dateWindowPresets` for initial window state; it is set to `'today'` (today’s view by default).
+- **Presets**: Use the shared helper `getWindowPreset` from `@/lib/dateWindowPresets` for "Today", "Tomorrow", "Next 24h", "Next 7 days". All times are UTC.
+- **Duration**: Use `DURATION_OPTIONS` (15, 30, 45, 60, 90 minutes) for the Find Availability duration dropdown.
+- Label window inputs as "(UTC)" where relevant.
+
+## Find Availability behavior
+
+- After "Find", always show both the **result card** (Slot found / No slot) and the **calendar** (busy blocks) when there are selected attendees, whether the availability request succeeded or failed.
+- Busy data must be fetched and set even when the availability request fails (e.g. network error), so the calendar is still visible. Fetch `getBusyInWindow` in parallel and set `busyData` in a `finally` (or equivalent) so it is updated regardless of `getAvailability` success/failure.

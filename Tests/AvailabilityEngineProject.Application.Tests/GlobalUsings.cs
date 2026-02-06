@@ -1,0 +1,9 @@
+global using FluentAssertions;
+global using Moq;
+global using Xunit;
+global using AvailabilityEngineProject.Domain;
+global using AvailabilityEngineProject.Application.Commands.PutBusy;
+global using AvailabilityEngineProject.Application.Queries.GetAvailability;
+global using AvailabilityEngineProject.Application.Repository;
+global using AvailabilityEngineProject.Application.Services;
+global using AvailabilityEngineProject.Application.Strategies;

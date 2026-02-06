@@ -1,0 +1,15 @@
+[Unit]
+Description=Availability Engine Application
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/availabilityengine
+ExecStart=/usr/bin/docker compose -f docker-compose.yml -f deploy/docker-compose.production.yml up -d
+ExecStop=/usr/bin/docker compose -f docker-compose.yml -f deploy/docker-compose.production.yml down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

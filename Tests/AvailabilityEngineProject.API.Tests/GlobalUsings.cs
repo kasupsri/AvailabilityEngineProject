@@ -1,0 +1,10 @@
+global using FluentAssertions;
+global using Moq;
+global using Xunit;
+global using Microsoft.AspNetCore.Http;
+global using AvailabilityEngineProject.API.Routes.Calendars.Endpoints;
+global using AvailabilityEngineProject.API.Routes.Calendars.Models;
+global using AvailabilityEngineProject.API.Routes.Availability.Endpoints;
+global using AvailabilityEngineProject.API.Routes.Availability.Models;
+global using AvailabilityEngineProject.Application.Commands.PutBusy;
+global using AvailabilityEngineProject.Application.Queries.GetAvailability;

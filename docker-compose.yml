@@ -1,0 +1,80 @@
+services:
+  api:
+    image: availabilityengine-api:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: availabilityengine-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Data Source=/data/app.db
+    volumes:
+      - availabilityengine-data:/data
+    networks:
+      - availabilityengine-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  web:
+    image: availabilityengine-web:latest
+    build:
+      context: ./Presentation/AvailabilityEngineProject.Web
+      dockerfile: ../../docker/Dockerfile.web
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost}
+    container_name: availabilityengine-web
+    restart: unless-stopped
+    networks:
+      - availabilityengine-network
+    depends_on:
+      - api
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: availabilityengine-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    networks:
+      - availabilityengine-network
+    depends_on:
+      - api
+      - web
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  dbprimer:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: availabilityengine-dbprimer
+    entrypoint: ["dotnet", "/app/dbprimer/AvailabilityEngineProject.DbPrimer.Console.dll"]
+    command: ["--connection-string", "Data Source=/data/app.db"]
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=/data/app.db
+    volumes:
+      - availabilityengine-data:/data
+    networks:
+      - availabilityengine-network
+    profiles:
+      - init
+
+volumes:
+  availabilityengine-data:
+    driver: local
+
+networks:
+  availabilityengine-network:
+    driver: bridge
